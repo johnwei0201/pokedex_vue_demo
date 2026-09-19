@@ -251,11 +251,12 @@ async function fetchPokemon(nameOrId, { mystery = false } = {}) {
     }
 
     if (mystery) {
-      const primaryType = data.types[0]?.type.name
-      if (primaryType) {
+      const typeKeys = data.types.map((item) => item.type.name)
+      const primaryType = typeKeys[0]
+      if (primaryType && !typeKeys.includes(selectedType.value)) {
         selectedType.value = primaryType
-        typeHintOpen.value = true
       }
+      if (primaryType) typeHintOpen.value = true
     }
   } catch {
     pokemon.value = null
@@ -268,6 +269,9 @@ async function fetchPokemon(nameOrId, { mystery = false } = {}) {
 async function onTypeChange() {
   selectedName.value = ''
   await loadPokemonByType(selectedType.value)
+  if (isMystery.value && selectedType.value) {
+    await pickMysteryFromCurrentType()
+  }
 }
 
 function onNameChange() {
@@ -276,14 +280,7 @@ function onNameChange() {
   }
 }
 
-async function onRandom() {
-  if (!types.value.length) return
-
-  const typeName = types.value[Math.floor(Math.random() * types.value.length)].name
-  selectedType.value = typeName
-
-  await loadPokemonByType(typeName)
-
+async function pickMysteryFromCurrentType() {
   const list = pokemonOptions.value
   if (!list.length) {
     error.value = '這個屬性目前沒有可隨機的角色'
@@ -297,6 +294,16 @@ async function onRandom() {
   const pick = pool[Math.floor(Math.random() * pool.length)]
   selectedName.value = pick.name
   await fetchPokemon(pick.name, { mystery: true })
+}
+
+async function onRandom() {
+  if (!types.value.length) return
+
+  const typeName = types.value[Math.floor(Math.random() * types.value.length)].name
+  selectedType.value = typeName
+
+  await loadPokemonByType(typeName)
+  await pickMysteryFromCurrentType()
 }
 
 function mysteryArt(id, fallback) {
