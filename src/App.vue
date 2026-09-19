@@ -66,6 +66,11 @@ const listLoading = ref(false)
 const pokemon = ref(null)
 const loading = ref(false)
 const error = ref('')
+const pageIndex = ref(0)
+
+let swipeStartX = null
+
+const isMystery = computed(() => !!(pokemon.value && pageIndex.value === 0))
 
 const typeChips = computed(() => {
   const list = pokemonOptions.value
@@ -195,12 +200,13 @@ async function loadPokemonByType(typeName) {
   }
 }
 
-async function fetchPokemon(nameOrId) {
+async function fetchPokemon(nameOrId, { mystery = false } = {}) {
   const q = String(nameOrId).trim().toLowerCase()
   if (!q) return
 
   loading.value = true
   error.value = ''
+  pageIndex.value = mystery ? 0 : 1
 
   try {
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${q}`)
@@ -272,7 +278,34 @@ async function onRandom() {
       : list
   const pick = pool[Math.floor(Math.random() * pool.length)]
   selectedName.value = pick.name
-  await fetchPokemon(pick.name)
+  await fetchPokemon(pick.name, { mystery: true })
+}
+
+function mysteryArt(id, fallback) {
+  return id ? `/pokemon/${id}.png` : fallback
+}
+
+function onMysteryArtError(event) {
+  const fallback = pokemon.value?.image
+  if (fallback && event.target.src !== fallback) {
+    event.target.src = fallback
+  }
+}
+
+function goToPage(index) {
+  pageIndex.value = index === 1 ? 1 : 0
+}
+
+function onPointerDown(event) {
+  swipeStartX = event.clientX
+}
+
+function onPointerUp(event) {
+  if (swipeStartX == null) return
+  const delta = event.clientX - swipeStartX
+  swipeStartX = null
+  if (delta < -40) pageIndex.value = 1
+  if (delta > 40) pageIndex.value = 0
 }
 
 async function onQuickPick(name) {
@@ -286,7 +319,7 @@ onMounted(async () => {
     selectedType.value = 'electric'
     await loadPokemonByType('electric')
     selectedName.value = 'pikachu'
-    await fetchPokemon('pikachu')
+    await fetchPokemon('pikachu', { mystery: true })
   } catch {
     error.value = '屬性列表載入失敗，請重新整理'
   }
@@ -313,13 +346,21 @@ onMounted(async () => {
     </h1>
     <section class="panel search-panel">
       <form class="search-row" @submit.prevent="onRandom">
+        <div
+          v-if="isMystery"
+          class="search-select search-hint"
+          aria-label="提示類別"
+        >
+          提示類別:不拘
+        </div>
         <select
+          v-else
           v-model="selectedType"
           class="search-select"
           aria-label="選擇屬性"
           @change="onTypeChange"
         >
-          <option value="" disabled>選擇屬性</option>
+          <option value="">提示類別:不拘</option>
           <option v-for="type in types" :key="type.name" :value="type.name">
             {{ type.label }}
           </option>
@@ -328,8 +369,9 @@ onMounted(async () => {
         <select
           v-model="selectedName"
           class="search-select"
+          :class="{ 'is-mystery': pokemon && pageIndex === 0 }"
           aria-label="選擇角色"
-          :disabled="!selectedType || listLoading"
+          :disabled="!selectedType || listLoading || isMystery"
           @change="onNameChange"
         >
           <option value="" disabled>
@@ -349,7 +391,10 @@ onMounted(async () => {
         </button>
       </form>
 
-      <div v-if="typeChips.length" class="chips">
+      <div
+        v-if="typeChips.length && pageIndex === 1"
+        class="chips"
+      >
         <button
           v-for="item in typeChips"
           :key="item.name"
@@ -363,42 +408,104 @@ onMounted(async () => {
       </div>
     </section>
 
-    <section class="panel result-panel">
+    <section
+      class="panel result-panel"
+      :class="{ 'is-mystery': isMystery }"
+    >
       <p v-if="loading" class="status">查詢中...</p>
       <p v-else-if="error && !pokemon" class="status error">{{ error }}</p>
 
-      <article v-else-if="pokemon" class="pokemon">
-        <h2 class="poke-name">{{ pokemon.name }}</h2>
-        <div class="types">
-          <span
-            v-for="type in pokemon.types"
-            :key="type.name"
-            class="type-badge"
-            :style="{ backgroundColor: type.color }"
-          >
-            {{ type.name }}
-          </span>
-        </div>
-        <img
-          v-if="pokemon.image"
-          class="poke-img"
-          :src="pokemon.image"
-          :alt="pokemon.name"
-        />
+      <div
+        v-else-if="pokemon"
+        class="deck"
+        @pointerdown="onPointerDown"
+        @pointerup="onPointerUp"
+        @pointercancel="swipeStartX = null"
+      >
+        <div
+          class="deck-track"
+          :class="{ 'is-dex': pageIndex === 1 }"
+        >
+          <article class="deck-page pokemon">
+            <h2 class="mystery-title">
+              <span class="mystery-marks">????</span>
+              <span class="mystery-who">我是誰</span>
+            </h2>
+            <button
+              class="silhouette-board"
+              type="button"
+              aria-label="查看圖鑑"
+              @click="goToPage(1)"
+            >
+              <img
+                class="silhouette-frame"
+                src="/pokemon/mystery-frame.png"
+                alt=""
+                draggable="false"
+              />
+              <img
+                v-if="pokemon.image"
+                class="poke-img is-silhouette"
+                :src="mysteryArt(pokemon.id, pokemon.image)"
+                alt="寶可夢剪影"
+                draggable="false"
+                @error="onMysteryArtError"
+              />
+            </button>
+            <p class="reveal-hint">往左滑，查看圖鑑</p>
+          </article>
 
-        <div class="stats-layout">
-          <ul class="stats">
-            <li v-for="stat in pokemon.stats" :key="stat.key" class="stat-row">
-              <span class="stat-label">{{ stat.label }}</span>
-              <div class="stat-track">
-                <div class="stat-fill" :style="{ width: barWidth(stat.value) }" />
-              </div>
-              <span class="stat-value">{{ stat.value }}</span>
-            </li>
-          </ul>
-          <RadarChart :stats="pokemon.stats" />
+          <article class="deck-page pokemon">
+            <h2 class="poke-name">{{ pokemon.name }}</h2>
+            <div class="types">
+              <span
+                v-for="type in pokemon.types"
+                :key="type.name"
+                class="type-badge"
+                :style="{ backgroundColor: type.color }"
+              >
+                {{ type.name }}
+              </span>
+            </div>
+            <img
+              v-if="pokemon.image"
+              class="poke-img"
+              :src="pokemon.image"
+              :alt="pokemon.name"
+              draggable="false"
+            />
+            <div class="stats-layout">
+              <ul class="stats">
+                <li v-for="stat in pokemon.stats" :key="stat.key" class="stat-row">
+                  <span class="stat-label">{{ stat.label }}</span>
+                  <div class="stat-track">
+                    <div class="stat-fill" :style="{ width: barWidth(stat.value) }" />
+                  </div>
+                  <span class="stat-value">{{ stat.value }}</span>
+                </li>
+              </ul>
+              <RadarChart :stats="pokemon.stats" />
+            </div>
+          </article>
         </div>
-      </article>
+
+        <div class="deck-dots">
+          <button
+            class="deck-dot"
+            :class="{ 'is-on': pageIndex === 0 }"
+            type="button"
+            aria-label="我是誰"
+            @click="goToPage(0)"
+          />
+          <button
+            class="deck-dot"
+            :class="{ 'is-on': pageIndex === 1 }"
+            type="button"
+            aria-label="圖鑑"
+            @click="goToPage(1)"
+          />
+        </div>
+      </div>
     </section>
   </main>
 </template>

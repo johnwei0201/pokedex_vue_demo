@@ -77,6 +77,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .site-title {
@@ -101,6 +103,7 @@ body {
   background: #fff;
   border-radius: 28px;
   box-shadow: 0 8px 24px rgba(80, 64, 32, 0.08);
+  min-width: 0;
 }
 
 .search-panel {
@@ -138,6 +141,13 @@ body {
   color: #b0aaa2;
   cursor: not-allowed;
   background-color: #faf8f4;
+}
+
+.search-hint {
+  display: flex;
+  align-items: center;
+  cursor: default;
+  color: #5c564c;
 }
 
 .search-btn {
@@ -184,6 +194,68 @@ body {
 
 .result-panel {
   padding: 12px 16px 14px;
+  overflow: hidden;
+}
+
+.result-panel.is-mystery {
+  background: #1b3a9c;
+}
+
+.result-panel.is-mystery .reveal-hint {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.result-panel.is-mystery .deck-dot {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.result-panel.is-mystery .deck-dot.is-on {
+  background: #ffe44d;
+}
+
+.deck {
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.deck-track {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 200%;
+  margin-left: 0;
+  transition: margin-left 0.28s ease;
+}
+
+.deck-track.is-dex {
+  margin-left: -100%;
+}
+
+.deck-page {
+  box-sizing: border-box;
+  flex: 0 0 50%;
+  width: 50%;
+  min-width: 0;
+}
+
+.deck-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.deck-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d9d3c8;
+}
+
+.deck-dot.is-on {
+  background: #3f7a4a;
 }
 
 .status {
@@ -207,6 +279,90 @@ body {
   height: 225px;
   object-fit: contain;
   margin: 4px 0 8px;
+  transition: filter 0.35s ease;
+}
+
+.poke-img.is-silhouette {
+  filter: brightness(0);
+  cursor: pointer;
+}
+
+.mystery-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 28px 0 0;
+  padding: 0;
+  background: none;
+  color: #ffe44d;
+  line-height: 0.95;
+  text-align: center;
+  text-shadow:
+    -2px -2px 0 #142c78,
+    2px -2px 0 #142c78,
+    -2px 2px 0 #142c78,
+    2px 2px 0 #142c78;
+}
+
+.mystery-marks {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.mystery-who {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.silhouette-board {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 2px 0 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.silhouette-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.silhouette-board .poke-img.is-silhouette {
+  position: relative;
+  z-index: 1;
+  width: 54%;
+  height: 54%;
+  margin: 0;
+}
+
+.reveal-hint {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #8a8378;
+}
+
+.type-hidden {
+  background: #c4bfb6;
+  color: #fff;
+}
+
+.search-select.is-mystery {
+  filter: blur(7px);
+  user-select: none;
 }
 
 .poke-name {
@@ -331,6 +487,25 @@ body {
   .poke-img {
     width: 180px;
     height: 180px;
+  }
+
+  .silhouette-board {
+    width: 240px;
+    height: 240px;
+  }
+
+  .silhouette-board .poke-img,
+  .silhouette-board .poke-img.is-silhouette {
+    width: 54%;
+    height: 54%;
+  }
+
+  .mystery-marks {
+    font-size: 28px;
+  }
+
+  .mystery-who {
+    font-size: 24px;
   }
 
   .poke-name {

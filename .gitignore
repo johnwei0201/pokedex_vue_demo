@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local official-artwork download (too large for git)
+public/pokemon/*.png
+!public/pokemon/mystery-frame.png
