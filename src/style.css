@@ -71,7 +71,7 @@ body {
 }
 
 .page {
-  width: min(440px, calc(100% - 32px));
+  width: min(560px, calc(100% - 32px));
   margin: 0 auto;
   padding: 24px 0 40px;
   display: flex;
@@ -91,23 +91,35 @@ body {
 
 .search-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 
-.search-input {
+.search-select {
   flex: 1;
+  min-width: 0;
   height: 44px;
-  padding: 0 16px;
+  padding: 0 32px 0 14px;
   border: 1px solid #e6e0d4;
   border-radius: 999px;
-  background: #fff;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238b8680' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
   color: #5c564c;
   outline: none;
+  appearance: none;
+  cursor: pointer;
 }
 
-.search-input:focus {
+.search-select:focus {
   border-color: #c8bfae;
+}
+
+.search-select:disabled {
+  color: #b0aaa2;
+  cursor: not-allowed;
+  background-color: #faf8f4;
 }
 
 .search-btn {
@@ -198,6 +210,14 @@ body {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
 }
 
+.stats-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  gap: 4px 4px;
+  width: 100%;
+  align-items: center;
+}
+
 .stats {
   width: 100%;
   display: flex;
@@ -207,7 +227,7 @@ body {
 
 .stat-row {
   display: grid;
-  grid-template-columns: 64px 1fr 36px;
+  grid-template-columns: 40px 1fr 36px;
   align-items: center;
   gap: 10px;
 }
@@ -234,4 +254,42 @@ body {
   font-size: 15px;
   color: #8b8680;
   text-align: right;
+}
+
+.radar {
+  width: 190px;
+  height: 190px;
+}
+
+.radar-grid {
+  fill: none;
+  stroke: #ece9e3;
+  stroke-width: 1;
+}
+
+.radar-axis {
+  stroke: #ece9e3;
+  stroke-width: 1;
+}
+
+.radar-area {
+  fill: rgba(79, 138, 74, 0.28);
+  stroke: #4f8a4a;
+  stroke-width: 2;
+}
+
+.radar-dot {
+  fill: #4f8a4a;
+}
+
+.radar-label {
+  fill: #6f6a62;
+  font-size: 13px;
+}
+
+@media (max-width: 400px) {
+  .stats-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
 }
