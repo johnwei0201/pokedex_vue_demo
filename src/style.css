@@ -231,7 +231,7 @@ body {
 .stats-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 168px;
-  gap: 0 2px;
+  gap: 0 16px;
   width: 100%;
   align-items: center;
   overflow: visible;
@@ -246,9 +246,9 @@ body {
 
 .stat-row {
   display: grid;
-  grid-template-columns: 40px 1fr 36px;
+  grid-template-columns: 34px 1fr 26px;
   align-items: center;
-  gap: 10px;
+  gap: 2px;
 }
 
 .stat-label {
@@ -334,6 +334,7 @@ body {
 
   .stats-layout {
     grid-template-columns: minmax(0, 1fr) 140px;
+    gap: 0 12px;
   }
 
   .radar {
