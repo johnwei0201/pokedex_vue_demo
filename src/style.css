@@ -71,12 +71,12 @@ body {
 }
 
 .page {
-  width: min(560px, calc(100% - 32px));
+  width: min(560px, calc(100% - 24px));
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 16px 0 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .panel {
@@ -86,7 +86,7 @@ body {
 }
 
 .search-panel {
-  padding: 18px 18px 16px;
+  padding: 12px 14px 10px;
 }
 
 .search-row {
@@ -98,7 +98,7 @@ body {
 .search-select {
   flex: 1;
   min-width: 0;
-  height: 44px;
+  height: 40px;
   padding: 0 32px 0 14px;
   border: 1px solid #e6e0d4;
   border-radius: 999px;
@@ -123,8 +123,8 @@ body {
 }
 
 .search-btn {
-  height: 44px;
-  padding: 0 22px;
+  height: 40px;
+  padding: 0 18px;
   border-radius: 999px;
   background: #3f7a4a;
   color: #fff;
@@ -140,17 +140,17 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-  margin-top: 14px;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .chip {
-  padding: 5px 12px;
+  padding: 4px 10px;
   border: 1px solid #ece7dc;
   border-radius: 999px;
   background: #fff;
   color: #6b645a;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .chip:hover {
@@ -159,8 +159,7 @@ body {
 }
 
 .result-panel {
-  padding: 28px 22px 24px;
-  min-height: 420px;
+  padding: 12px 16px 14px;
 }
 
 .status {
@@ -180,14 +179,14 @@ body {
 }
 
 .poke-img {
-  width: 220px;
-  height: 220px;
+  width: 150px;
+  height: 150px;
   object-fit: contain;
+  margin: 4px 0 8px;
 }
 
 .poke-name {
-  margin-top: 8px;
-  font-size: 42px;
+  font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.5px;
   color: #3b3933;
@@ -196,7 +195,7 @@ body {
 .types {
   display: flex;
   gap: 8px;
-  margin: 10px 0 22px;
+  margin: 4px 0 0;
 }
 
 .type-badge {
@@ -212,8 +211,8 @@ body {
 
 .stats-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 190px;
-  gap: 4px 4px;
+  grid-template-columns: minmax(0, 1fr) 168px;
+  gap: 0 2px;
   width: 100%;
   align-items: center;
 }
@@ -222,7 +221,7 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .stat-row {
@@ -238,7 +237,7 @@ body {
 }
 
 .stat-track {
-  height: 10px;
+  height: 8px;
   border-radius: 999px;
   background: #ece9e3;
   overflow: hidden;
@@ -257,8 +256,8 @@ body {
 }
 
 .radar {
-  width: 190px;
-  height: 190px;
+  width: 168px;
+  height: 168px;
 }
 
 .radar-grid {
@@ -288,8 +287,30 @@ body {
 }
 
 @media (max-width: 400px) {
+  .page {
+    padding: 10px 0 12px;
+    gap: 8px;
+  }
+
+  .poke-img {
+    width: 120px;
+    height: 120px;
+  }
+
+  .poke-name {
+    font-size: 28px;
+  }
+
   .stats-layout {
-    grid-template-columns: 1fr;
-    justify-items: center;
+    grid-template-columns: minmax(0, 1fr) 140px;
+  }
+
+  .radar {
+    width: 140px;
+    height: 140px;
+  }
+
+  .radar-label {
+    font-size: 11px;
   }
 }
