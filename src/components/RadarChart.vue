@@ -11,7 +11,7 @@ const props = defineProps({
 const SIZE = 260
 const CX = 130
 const CY = 132
-const RADIUS = 78
+const RADIUS = 72
 const LEVELS = 4
 const MAX_STAT = 180
 
@@ -27,8 +27,8 @@ const axes = computed(() => {
       y: CY + Math.sin(angle) * RADIUS * ratio,
       axisX: CX + Math.cos(angle) * RADIUS,
       axisY: CY + Math.sin(angle) * RADIUS,
-      labelX: CX + Math.cos(angle) * (RADIUS + 30),
-      labelY: CY + Math.sin(angle) * (RADIUS + 30),
+      labelX: CX + Math.cos(angle) * (RADIUS + 14),
+      labelY: CY + Math.sin(angle) * (RADIUS + 14),
       anchor:
         Math.cos(angle) > 0.2 ? 'start' : Math.cos(angle) < -0.2 ? 'end' : 'middle',
     }

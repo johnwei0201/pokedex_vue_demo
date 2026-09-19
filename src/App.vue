@@ -278,7 +278,22 @@ onMounted(async () => {
 
 <template>
   <main class="page">
-    <h1 class="site-title">寶可夢圖鑑</h1>
+    <h1 class="site-title">
+      <svg
+        class="site-logo"
+        viewBox="0 0 64 64"
+        role="img"
+        aria-label="精靈球"
+      >
+        <circle cx="32" cy="32" r="30" fill="#ef3340" />
+        <path d="M2 32h60" stroke="#1a1a1a" stroke-width="8" />
+        <path d="M2 32a30 30 0 0 1 60 0" fill="#f4f4f4" />
+        <circle cx="32" cy="32" r="12" fill="#1a1a1a" />
+        <circle cx="32" cy="32" r="7" fill="#f4f4f4" />
+        <circle cx="32" cy="32" r="30" fill="none" stroke="#1a1a1a" stroke-width="3" />
+      </svg>
+      寶可夢圖鑑
+    </h1>
     <section class="panel search-panel">
       <form class="search-row" @submit.prevent="onSearch">
         <select
