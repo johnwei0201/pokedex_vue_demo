@@ -67,10 +67,22 @@ const pokemon = ref(null)
 const loading = ref(false)
 const error = ref('')
 const pageIndex = ref(0)
+const typeHintOpen = ref(false)
 
 let swipeStartX = null
 
 const isMystery = computed(() => !!(pokemon.value && pageIndex.value === 0))
+
+const typeSelectValue = computed({
+  get() {
+    if (isMystery.value && !typeHintOpen.value) return ''
+    return selectedType.value
+  },
+  set(value) {
+    selectedType.value = value
+    if (isMystery.value) typeHintOpen.value = true
+  },
+})
 
 const typeChips = computed(() => {
   const list = pokemonOptions.value
@@ -237,6 +249,14 @@ async function fetchPokemon(nameOrId, { mystery = false } = {}) {
         value: item.base_stat,
       })),
     }
+
+    if (mystery) {
+      const primaryType = data.types[0]?.type.name
+      if (primaryType) {
+        selectedType.value = primaryType
+        typeHintOpen.value = true
+      }
+    }
   } catch {
     pokemon.value = null
     error.value = '找不到這隻寶可夢，請再選一次'
@@ -257,14 +277,12 @@ function onNameChange() {
 }
 
 async function onRandom() {
-  if (!selectedType.value) {
-    if (!types.value.length) return
-    selectedType.value = types.value[Math.floor(Math.random() * types.value.length)].name
-  }
+  if (!types.value.length) return
 
-  if (!pokemonOptions.value.length) {
-    await loadPokemonByType(selectedType.value)
-  }
+  const typeName = types.value[Math.floor(Math.random() * types.value.length)].name
+  selectedType.value = typeName
+
+  await loadPokemonByType(typeName)
 
   const list = pokemonOptions.value
   if (!list.length) {
@@ -345,46 +363,53 @@ onMounted(async () => {
       寶可夢圖鑑
     </h1>
     <section class="panel search-panel">
-      <form class="search-row" @submit.prevent="onRandom">
-        <div
-          v-if="isMystery"
-          class="search-select search-hint"
-          aria-label="提示類別"
-        >
-          提示類別:不拘
-        </div>
-        <select
-          v-else
-          v-model="selectedType"
-          class="search-select"
-          aria-label="選擇屬性"
-          @change="onTypeChange"
-        >
-          <option value="">提示類別:不拘</option>
-          <option v-for="type in types" :key="type.name" :value="type.name">
-            {{ type.label }}
-          </option>
-        </select>
-
-        <select
-          v-model="selectedName"
-          class="search-select"
-          :class="{ 'is-mystery': pokemon && pageIndex === 0 }"
-          aria-label="選擇角色"
-          :disabled="!selectedType || listLoading || isMystery"
-          @change="onNameChange"
-        >
-          <option value="" disabled>
-            {{ listLoading ? '載入中...' : '選擇角色' }}
-          </option>
-          <option
-            v-for="poke in pokemonOptions"
-            :key="poke.name"
-            :value="poke.name"
+      <form class="search-row" :class="{ 'is-mystery': isMystery }" @submit.prevent="onRandom">
+        <template v-if="isMystery">
+          <span class="hint-label">提示</span>
+          <select
+            v-model="typeSelectValue"
+            class="search-select"
+            aria-label="選擇屬性"
+            @change="onTypeChange"
           >
-            {{ poke.label }}
-          </option>
-        </select>
+            <option value="" disabled>屬性</option>
+            <option v-for="type in types" :key="type.name" :value="type.name">
+              {{ type.label }}
+            </option>
+          </select>
+        </template>
+        <template v-else>
+          <select
+            v-model="selectedType"
+            class="search-select"
+            aria-label="選擇屬性"
+            @change="onTypeChange"
+          >
+            <option value="" disabled>選擇屬性</option>
+            <option v-for="type in types" :key="type.name" :value="type.name">
+              {{ type.label }}
+            </option>
+          </select>
+
+          <select
+            v-model="selectedName"
+            class="search-select"
+            aria-label="選擇角色"
+            :disabled="!selectedType || listLoading"
+            @change="onNameChange"
+          >
+            <option value="" disabled>
+              {{ listLoading ? '載入中...' : '選擇角色' }}
+            </option>
+            <option
+              v-for="poke in pokemonOptions"
+              :key="poke.name"
+              :value="poke.name"
+            >
+              {{ poke.label }}
+            </option>
+          </select>
+        </template>
 
         <button class="search-btn" type="submit" :disabled="listLoading">
           隨機
