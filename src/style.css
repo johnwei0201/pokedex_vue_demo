@@ -79,6 +79,15 @@ body {
   gap: 10px;
 }
 
+.site-title {
+  margin: 0;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #3b3933;
+}
+
 .panel {
   background: #fff;
   border-radius: 28px;
@@ -179,8 +188,8 @@ body {
 }
 
 .poke-img {
-  width: 150px;
-  height: 150px;
+  width: 225px;
+  height: 225px;
   object-fit: contain;
   margin: 4px 0 8px;
 }
@@ -292,9 +301,13 @@ body {
     gap: 8px;
   }
 
+  .site-title {
+    font-size: 24px;
+  }
+
   .poke-img {
-    width: 120px;
-    height: 120px;
+    width: 180px;
+    height: 180px;
   }
 
   .poke-name {

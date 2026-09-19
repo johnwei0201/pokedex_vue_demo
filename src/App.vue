@@ -56,8 +56,10 @@ const TYPE_LABELS = {
 const HIDDEN_TYPES = new Set(['stellar', 'unknown', 'shadow'])
 const QUICK_PICKS = [
   { name: 'bulbasaur', label: '妙蛙種子' },
+  { name: 'charizard', label: '噴火龍' },
   { name: 'squirtle', label: '傑尼龜' },
   { name: 'pikachu', label: '皮卡丘' },
+  { name: 'snorlax', label: '卡比獸' },
 ]
 const NAME_CACHE_KEY = 'pokedex-zh-names-v2'
 const typePokemonCache = {}
@@ -273,6 +275,7 @@ onMounted(async () => {
 
 <template>
   <main class="page">
+    <h1 class="site-title">寶可夢圖鑑</h1>
     <section class="panel search-panel">
       <form class="search-row" @submit.prevent="onSearch">
         <select
@@ -327,7 +330,7 @@ onMounted(async () => {
       <p v-else-if="error && !pokemon" class="status error">{{ error }}</p>
 
       <article v-else-if="pokemon" class="pokemon">
-        <h1 class="poke-name">{{ pokemon.name }}</h1>
+        <h2 class="poke-name">{{ pokemon.name }}</h2>
         <div class="types">
           <span
             v-for="type in pokemon.types"
