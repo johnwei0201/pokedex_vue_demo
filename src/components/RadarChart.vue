@@ -27,8 +27,8 @@ const axes = computed(() => {
       y: CY + Math.sin(angle) * RADIUS * ratio,
       axisX: CX + Math.cos(angle) * RADIUS,
       axisY: CY + Math.sin(angle) * RADIUS,
-      labelX: CX + Math.cos(angle) * (RADIUS + 24),
-      labelY: CY + Math.sin(angle) * (RADIUS + 24),
+      labelX: CX + Math.cos(angle) * (RADIUS + 30),
+      labelY: CY + Math.sin(angle) * (RADIUS + 30),
       anchor:
         Math.cos(angle) > 0.2 ? 'start' : Math.cos(angle) < -0.2 ? 'end' : 'middle',
     }

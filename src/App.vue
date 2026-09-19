@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import RadarChart from './components/RadarChart.vue'
 
 const STAT_LABELS = {
@@ -54,13 +54,6 @@ const TYPE_LABELS = {
 }
 
 const HIDDEN_TYPES = new Set(['stellar', 'unknown', 'shadow'])
-const QUICK_PICKS = [
-  { name: 'bulbasaur', label: '妙蛙種子' },
-  { name: 'charizard', label: '噴火龍' },
-  { name: 'squirtle', label: '傑尼龜' },
-  { name: 'pikachu', label: '皮卡丘' },
-  { name: 'snorlax', label: '卡比獸' },
-]
 const NAME_CACHE_KEY = 'pokedex-zh-names-v2'
 const typePokemonCache = {}
 const zhNameCache = loadNameCache()
@@ -73,6 +66,24 @@ const listLoading = ref(false)
 const pokemon = ref(null)
 const loading = ref(false)
 const error = ref('')
+
+const typeChips = computed(() => {
+  const list = pokemonOptions.value
+  if (!list.length) return []
+
+  const chips = []
+  const current = list.find((item) => item.name === selectedName.value)
+  if (current) chips.push(current)
+
+  for (const item of list) {
+    if (chips.length >= 5) break
+    if (!chips.some((chip) => chip.name === item.name)) {
+      chips.push(item)
+    }
+  }
+
+  return chips
+})
 
 function loadNameCache() {
   try {
@@ -247,17 +258,9 @@ function onSearch() {
   fetchPokemon(selectedName.value)
 }
 
-async function syncSelectsFromPokemon(apiName) {
-  if (!pokemon.value?.typeKeys?.length) return
-  const typeName = pokemon.value.typeKeys[0]
-  selectedType.value = typeName
-  await loadPokemonByType(typeName)
-  selectedName.value = apiName
-}
-
 async function onQuickPick(name) {
+  selectedName.value = name
   await fetchPokemon(name)
-  await syncSelectsFromPokemon(name.toLowerCase())
 }
 
 onMounted(async () => {
@@ -312,11 +315,12 @@ onMounted(async () => {
         <button class="search-btn" type="submit">查詢</button>
       </form>
 
-      <div class="chips">
+      <div v-if="typeChips.length" class="chips">
         <button
-          v-for="item in QUICK_PICKS"
+          v-for="item in typeChips"
           :key="item.name"
           class="chip"
+          :class="{ 'is-active': item.name === selectedName }"
           type="button"
           @click="onQuickPick(item.name)"
         >
