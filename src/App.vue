@@ -250,12 +250,29 @@ function onNameChange() {
   }
 }
 
-function onSearch() {
-  if (!selectedType.value || !selectedName.value) {
-    error.value = '請先選擇屬性和角色'
+async function onRandom() {
+  if (!selectedType.value) {
+    if (!types.value.length) return
+    selectedType.value = types.value[Math.floor(Math.random() * types.value.length)].name
+  }
+
+  if (!pokemonOptions.value.length) {
+    await loadPokemonByType(selectedType.value)
+  }
+
+  const list = pokemonOptions.value
+  if (!list.length) {
+    error.value = '這個屬性目前沒有可隨機的角色'
     return
   }
-  fetchPokemon(selectedName.value)
+
+  const pool =
+    list.length > 1
+      ? list.filter((item) => item.name !== selectedName.value)
+      : list
+  const pick = pool[Math.floor(Math.random() * pool.length)]
+  selectedName.value = pick.name
+  await fetchPokemon(pick.name)
 }
 
 async function onQuickPick(name) {
@@ -295,7 +312,7 @@ onMounted(async () => {
       寶可夢圖鑑
     </h1>
     <section class="panel search-panel">
-      <form class="search-row" @submit.prevent="onSearch">
+      <form class="search-row" @submit.prevent="onRandom">
         <select
           v-model="selectedType"
           class="search-select"
@@ -327,7 +344,9 @@ onMounted(async () => {
           </option>
         </select>
 
-        <button class="search-btn" type="submit">查詢</button>
+        <button class="search-btn" type="submit" :disabled="listLoading">
+          隨機
+        </button>
       </form>
 
       <div v-if="typeChips.length" class="chips">
