@@ -576,6 +576,11 @@ function onPointerUp(event) {
 
   if (pageIndex.value === 0 && event.target.closest?.('.silhouette-board')) {
     goToPage(1)
+    return
+  }
+
+  if (pageIndex.value === 1 && event.target.closest?.('.poke-img.is-dex-art')) {
+    openMysteryFromDex()
   }
 }
 
@@ -583,6 +588,17 @@ function onSilhouetteClick(event) {
   event.preventDefault()
   if (Date.now() < skipSilhouetteUntil) return
   goToPage(1)
+}
+
+function openMysteryFromDex() {
+  if (Date.now() < skipSilhouetteUntil) return
+  typeHintOpen.value = false
+  goToPage(0)
+}
+
+function onDexArtClick(event) {
+  event.preventDefault()
+  openMysteryFromDex()
 }
 
 async function onQuickPick(name) {
@@ -816,10 +832,11 @@ onMounted(async () => {
               </button>
               <img
                 v-if="pokemon.image"
-                class="poke-img"
+                class="poke-img is-dex-art"
                 :src="pokemon.image"
                 :alt="pokemon.name"
                 draggable="false"
+                @click="onDexArtClick"
               />
               <button
                 class="swipe-arrow is-muted"

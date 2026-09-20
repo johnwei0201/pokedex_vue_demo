@@ -366,6 +366,10 @@ body {
   cursor: pointer;
 }
 
+.poke-img.is-dex-art {
+  cursor: pointer;
+}
+
 .mystery-title {
   display: flex;
   flex-direction: column;
