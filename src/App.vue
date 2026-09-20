@@ -627,9 +627,9 @@ onMounted(async () => {
               <button
                 class="swipe-arrow"
                 type="button"
-                aria-label="下一題"
+                aria-label="上一題"
                 @pointerdown.stop
-                @click.stop="onSwipeLeft"
+                @click.stop="onMysteryPrev"
               >
                 <svg viewBox="0 0 24 48" aria-hidden="true">
                   <path
@@ -666,9 +666,9 @@ onMounted(async () => {
               <button
                 class="swipe-arrow"
                 type="button"
-                aria-label="上一題"
+                aria-label="下一題"
                 @pointerdown.stop
-                @click.stop="onSwipeRight"
+                @click.stop="onMysteryNext"
               >
                 <svg viewBox="0 0 24 48" aria-hidden="true">
                   <path
