@@ -57,6 +57,10 @@ const TYPE_LABELS = {
 const HIDDEN_TYPES = new Set(['stellar', 'unknown', 'shadow'])
 const typePokemonCache = {}
 const flavorCache = {}
+const DEX_NOS = Object.keys(ZH_NAMES)
+  .map(Number)
+  .filter((id) => Number.isFinite(id) && id > 0)
+  .sort((a, b) => a - b)
 
 const types = ref([])
 const selectedType = ref('')
@@ -290,6 +294,22 @@ async function onTypeChange() {
 function onNameChange() {
   if (selectedName.value) {
     fetchPokemon(selectedName.value)
+  }
+}
+
+async function onDexNoChange(event) {
+  const id = event.target.value
+  if (!id) return
+
+  await fetchPokemon(id)
+  const current = pokemon.value
+  if (!current) return
+
+  selectedName.value = current.apiName
+  const typeName = current.typeKeys?.[0]
+  if (typeName) {
+    selectedType.value = typeName
+    await loadPokemonByType(typeName)
   }
 }
 
@@ -592,6 +612,19 @@ onMounted(async () => {
         </template>
         <template v-else>
           <select
+            class="search-select search-select-no"
+            aria-label="選擇編號"
+            :value="pokemon ? String(pokemon.id) : ''"
+            :disabled="listLoading"
+            @change="onDexNoChange"
+          >
+            <option value="" disabled>編號</option>
+            <option v-for="id in DEX_NOS" :key="id" :value="String(id)">
+              {{ padDexNo(id) }}
+            </option>
+          </select>
+
+          <select
             v-model="selectedType"
             class="search-select"
             aria-label="選擇屬性"
@@ -731,7 +764,7 @@ onMounted(async () => {
             <div class="poke-title">
               <span class="poke-no">No. {{ padDexNo(pokemon.id) }}</span>
               <h2 class="poke-name">{{ pokemon.name }}</h2>
-              <span class="poke-en">{{ displayName(pokemon.apiName) }}</span>
+              <p class="poke-en">{{ displayName(pokemon.apiName) }}</p>
             </div>
             <div class="silhouette-wrap">
               <button
