@@ -329,7 +329,17 @@ function onPointerUp(event) {
   if (swipeStartX == null) return
   const delta = event.clientX - swipeStartX
   swipeStartX = null
-  if (delta < -40) pageIndex.value = 1
+  if (loading.value || listLoading.value) return
+
+  if (delta < -40) {
+    if (pageIndex.value === 0) {
+      pageIndex.value = 1
+    } else {
+      onRandom()
+    }
+    return
+  }
+
   if (delta > 40) pageIndex.value = 0
 }
 
@@ -518,6 +528,7 @@ onMounted(async () => {
               </ul>
               <RadarChart :stats="pokemon.stats" />
             </div>
+            <p class="reveal-hint">往左滑，下一題</p>
           </article>
         </div>
 
