@@ -569,7 +569,7 @@ onMounted(async () => {
         </template>
 
         <button class="search-btn" type="submit" :disabled="listLoading">
-          隨機
+          {{ pageIndex === 1 ? '隨機猜' : '隨機' }}
         </button>
       </form>
 
@@ -608,7 +608,7 @@ onMounted(async () => {
           class="deck-track"
           :class="{ 'is-dex': pageIndex === 1 }"
         >
-          <article class="deck-page pokemon">
+          <article class="deck-page pokemon mystery-page">
             <h2 class="mystery-title">
               <span class="mystery-marks">????</span>
               <span class="mystery-who">我是誰</span>

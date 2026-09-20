@@ -260,6 +260,10 @@ body {
   min-width: 0;
 }
 
+.mystery-page {
+  padding-top: 12px;
+}
+
 .deck-dots {
   display: flex;
   justify-content: center;
@@ -317,12 +321,15 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  margin: 28px 0 0;
-  padding: 0;
+  justify-content: center;
+  width: max-content;
+  max-width: 70%;
+  min-height: 84px;
+  margin: 0 auto 2px;
+  padding: 4px 10px 2px;
   background: none;
   color: #ffe44d;
-  line-height: 0.95;
+  line-height: 0.98;
   text-align: center;
   text-shadow:
     -2px -2px 0 #142c78,
@@ -332,15 +339,15 @@ body {
 }
 
 .mystery-marks {
-  font-size: 34px;
+  font-size: 42px;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
 }
 
 .mystery-who {
-  font-size: 28px;
+  font-size: 36px;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 
 .silhouette-wrap {
@@ -568,12 +575,16 @@ body {
     height: 68%;
   }
 
+  .mystery-title {
+    min-height: 78px;
+  }
+
   .mystery-marks {
-    font-size: 28px;
+    font-size: 40px;
   }
 
   .mystery-who {
-    font-size: 24px;
+    font-size: 34px;
   }
 
   .poke-name {
