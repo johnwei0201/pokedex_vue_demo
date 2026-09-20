@@ -283,8 +283,8 @@ function onNameChange() {
   }
 }
 
-async function pickMysteryFromCurrentType() {
-  if (!skipHistoryPush && pokemon.value?.apiName) {
+async function pickMysteryFromCurrentType(mystery = true) {
+  if (mystery && !skipHistoryPush && pokemon.value?.apiName) {
     mysteryHistory.push({
       name: pokemon.value.apiName,
       type: selectedType.value,
@@ -305,7 +305,7 @@ async function pickMysteryFromCurrentType() {
       : list
   const pick = pool[Math.floor(Math.random() * pool.length)]
   selectedName.value = pick.name
-  await fetchPokemon(pick.name, { mystery: true })
+  await fetchPokemon(pick.name, { mystery })
 }
 
 async function onRandom() {
@@ -315,7 +315,17 @@ async function onRandom() {
   selectedType.value = typeName
 
   await loadPokemonByType(typeName)
-  await pickMysteryFromCurrentType()
+  await pickMysteryFromCurrentType(true)
+}
+
+async function onRandomAnswer() {
+  if (!types.value.length) return
+
+  const typeName = types.value[Math.floor(Math.random() * types.value.length)].name
+  selectedType.value = typeName
+
+  await loadPokemonByType(typeName)
+  await pickMysteryFromCurrentType(false)
 }
 
 function mysteryArt(id, fallback) {
@@ -336,6 +346,10 @@ function goToPage(index) {
 function onSwipeLeft() {
   if (loading.value || listLoading.value) return
   skipSilhouetteUntil = Date.now() + 700
+  if (pageIndex.value === 1) {
+    onRandomAnswer()
+    return
+  }
   onRandom()
 }
 
@@ -344,7 +358,7 @@ async function onSwipeRight() {
   skipSilhouetteUntil = Date.now() + 700
 
   if (pageIndex.value === 1) {
-    pageIndex.value = 0
+    onRandomAnswer()
     return
   }
 
@@ -601,7 +615,7 @@ onMounted(async () => {
               <button
                 class="swipe-arrow is-muted"
                 type="button"
-                aria-label="下一題"
+                aria-label="下一隻"
                 @pointerdown.stop
                 @click.stop="onSwipeLeft"
               >
@@ -626,7 +640,7 @@ onMounted(async () => {
               <button
                 class="swipe-arrow is-muted"
                 type="button"
-                aria-label="返回剪影"
+                aria-label="下一隻"
                 @pointerdown.stop
                 @click.stop="onSwipeRight"
               >
@@ -654,7 +668,7 @@ onMounted(async () => {
               </ul>
               <RadarChart :stats="pokemon.stats" />
             </div>
-            <p class="reveal-hint">往左滑，下一題</p>
+            <p class="reveal-hint">點左右看下一隻</p>
           </article>
         </div>
 
