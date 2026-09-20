@@ -629,11 +629,11 @@ onMounted(async () => {
 
           <select
             v-model="selectedType"
-            class="search-select"
+            class="search-select search-select-type"
             aria-label="選擇屬性"
             @change="onTypeChange"
           >
-            <option value="" disabled>選擇屬性</option>
+            <option value="" disabled>屬性</option>
             <option v-for="type in types" :key="type.name" :value="type.name">
               {{ type.label }}
             </option>
@@ -641,13 +641,13 @@ onMounted(async () => {
 
           <select
             v-model="selectedName"
-            class="search-select"
+            class="search-select search-select-name"
             aria-label="選擇角色"
             :disabled="!selectedType || listLoading"
             @change="onNameChange"
           >
             <option value="" disabled>
-              {{ listLoading ? '載入中...' : '選擇角色' }}
+              {{ listLoading ? '載入中' : '角色' }}
             </option>
             <option
               v-for="poke in pokemonOptions"
