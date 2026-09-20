@@ -448,12 +448,45 @@ body {
   user-select: none;
 }
 
+.poke-title {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 10px;
+  align-self: stretch;
+  width: 100%;
+  margin: 4px 0 0;
+  padding: 0 4px;
+}
+
+.poke-no,
+.poke-en {
+  font-size: 15px;
+  font-weight: 600;
+  color: #6f6a62;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.poke-no {
+  justify-self: end;
+  text-align: right;
+}
+
+.poke-en {
+  justify-self: start;
+  text-align: left;
+}
+
 .poke-name {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.5px;
   color: #3b3933;
-  margin: 4px 0 0;
+  margin: 0;
+  text-align: center;
 }
 
 .flavor-box {
@@ -630,6 +663,11 @@ body {
 
   .poke-name {
     font-size: 28px;
+  }
+
+  .poke-no,
+  .poke-en {
+    font-size: 13px;
   }
 
   .stats-layout {

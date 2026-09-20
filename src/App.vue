@@ -119,6 +119,10 @@ function displayName(name) {
   return name.split('-').map(capitalize).join(' ')
 }
 
+function padDexNo(id) {
+  return String(id).padStart(3, '0')
+}
+
 function barWidth(value) {
   return `${Math.min(value, 100)}%`
 }
@@ -724,7 +728,11 @@ onMounted(async () => {
           </article>
 
           <article class="deck-page pokemon">
-            <h2 class="poke-name">{{ pokemon.name }}</h2>
+            <div class="poke-title">
+              <span class="poke-no">No. {{ padDexNo(pokemon.id) }}</span>
+              <h2 class="poke-name">{{ pokemon.name }}</h2>
+              <span class="poke-en">{{ displayName(pokemon.apiName) }}</span>
+            </div>
             <div class="silhouette-wrap">
               <button
                 class="swipe-arrow is-muted"
