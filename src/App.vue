@@ -70,10 +70,12 @@ const typeHintOpen = ref(false)
 
 let swipeStartX = null
 let skipSilhouetteUntil = 0
-let skipHistoryPush = false
 let skipDexHistoryPush = false
 let dexInsertFront = false
+let skipMysteryHistoryPush = false
+let mysteryInsertFront = false
 const mysteryHistory = []
+const mysteryIndex = ref(-1)
 const dexHistory = []
 const dexIndex = ref(-1)
 
@@ -230,7 +232,8 @@ async function fetchPokemon(nameOrId, { mystery = false } = {}) {
     error.value = '找不到這隻寶可夢，請再選一次'
   } finally {
     loading.value = false
-    if (!mystery) rememberDexPokemon()
+    if (mystery) rememberMysteryPokemon()
+    else rememberDexPokemon()
   }
 }
 
@@ -249,15 +252,6 @@ function onNameChange() {
 }
 
 async function pickMysteryFromCurrentType(mystery = true) {
-  if (mystery && !skipHistoryPush && pokemon.value?.apiName) {
-    mysteryHistory.push({
-      name: pokemon.value.apiName,
-      type: selectedType.value,
-    })
-    if (mysteryHistory.length > 40) mysteryHistory.shift()
-  }
-  skipHistoryPush = false
-
   const list = pokemonOptions.value
   if (!list.length) {
     error.value = '這個屬性目前沒有可隨機的角色'
@@ -291,6 +285,73 @@ async function onRandomAnswer() {
 
   await loadPokemonByType(typeName)
   await pickMysteryFromCurrentType(false)
+}
+
+function rememberMysteryPokemon() {
+  if (skipMysteryHistoryPush) {
+    skipMysteryHistoryPush = false
+    return
+  }
+
+  const name = pokemon.value?.apiName
+  if (!name) {
+    mysteryInsertFront = false
+    return
+  }
+
+  const entry = {
+    name,
+    type: selectedType.value || pokemon.value.typeKeys?.[0] || '',
+  }
+  const current = mysteryHistory[mysteryIndex.value]
+  if (current?.name === entry.name) {
+    mysteryInsertFront = false
+    return
+  }
+
+  if (mysteryInsertFront) {
+    mysteryInsertFront = false
+    mysteryHistory.unshift(entry)
+    if (mysteryHistory.length > 40) mysteryHistory.pop()
+    mysteryIndex.value = 0
+    return
+  }
+
+  if (mysteryIndex.value >= 0 && mysteryIndex.value < mysteryHistory.length - 1) {
+    mysteryHistory.splice(mysteryIndex.value + 1)
+  }
+
+  mysteryHistory.push(entry)
+  if (mysteryHistory.length > 40) mysteryHistory.shift()
+  mysteryIndex.value = mysteryHistory.length - 1
+}
+
+async function showMysteryEntry(entry) {
+  skipMysteryHistoryPush = true
+  selectedType.value = entry.type
+  typeHintOpen.value = true
+  selectedName.value = entry.name
+  await loadPokemonByType(entry.type)
+  await fetchPokemon(entry.name, { mystery: true })
+}
+
+async function onMysteryNext() {
+  rememberMysteryPokemon()
+  if (mysteryIndex.value < mysteryHistory.length - 1) {
+    mysteryIndex.value += 1
+    await showMysteryEntry(mysteryHistory[mysteryIndex.value])
+    return
+  }
+
+  await onRandom()
+}
+
+async function onMysteryPrev() {
+  rememberMysteryPokemon()
+  if (mysteryIndex.value <= 0) return
+
+  mysteryIndex.value -= 1
+  await showMysteryEntry(mysteryHistory[mysteryIndex.value])
 }
 
 function rememberDexPokemon() {
@@ -377,6 +438,7 @@ function onMysteryArtError(event) {
 function goToPage(index) {
   pageIndex.value = index === 1 ? 1 : 0
   if (pageIndex.value === 1) rememberDexPokemon()
+  else rememberMysteryPokemon()
 }
 
 function onSwipeLeft() {
@@ -386,7 +448,7 @@ function onSwipeLeft() {
     onDexNext()
     return
   }
-  onRandom()
+  onMysteryNext()
 }
 
 async function onSwipeRight() {
@@ -398,18 +460,7 @@ async function onSwipeRight() {
     return
   }
 
-  const prev = mysteryHistory.pop()
-  if (!prev) {
-    onRandom()
-    return
-  }
-
-  skipHistoryPush = true
-  selectedType.value = prev.type
-  typeHintOpen.value = true
-  selectedName.value = prev.name
-  await loadPokemonByType(prev.type)
-  await fetchPokemon(prev.name, { mystery: true })
+  onMysteryPrev()
 }
 
 function onPointerDown(event) {
@@ -631,7 +682,7 @@ onMounted(async () => {
                 </svg>
               </button>
             </div>
-            <p class="reveal-hint">點黑影看答案，往左滑出下一題</p>
+            <p class="reveal-hint">點黑影看答案！</p>
           </article>
 
           <article class="deck-page pokemon">
