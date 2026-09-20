@@ -153,8 +153,8 @@ function cleanFlavorText(text) {
     .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
     .replace(/\s+/g, ' ')
     .replace(/([\u4e00-\u9fff，。！？、：；])\s+(?=[\u4e00-\u9fff])/g, '$1')
-    .replace(/\s+(?=\d)/g, '\u200A')
-    .replace(/(?<=\d)\s+/g, '\u200A')
+    .replace(/\s+(?=\d)/g, '\u2009')
+    .replace(/(?<=\d)\s+/g, '\u2009')
     .trim()
 }
 
