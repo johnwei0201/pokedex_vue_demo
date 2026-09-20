@@ -56,6 +56,7 @@ const TYPE_LABELS = {
 
 const HIDDEN_TYPES = new Set(['stellar', 'unknown', 'shadow'])
 const typePokemonCache = {}
+const flavorCache = {}
 
 const types = ref([])
 const selectedType = ref('')
@@ -131,6 +132,41 @@ function getZhName(id, fallback) {
   return ZH_NAMES[id] || ZH_NAMES[String(id)] || fallback
 }
 
+function cleanFlavorText(text) {
+  return String(text || '')
+    .replace(/\f/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/([\u4e00-\u9fff，。！？、：；])\s+(?=[\u4e00-\u9fff])/g, '$1')
+    .trim()
+}
+
+function pickFlavorText(entries, lang) {
+  const list = (entries || []).filter((item) => item.language?.name === lang)
+  return list[list.length - 1]?.flavor_text || ''
+}
+
+async function getFlavorText(speciesId) {
+  const key = String(speciesId)
+  if (flavorCache[key] !== undefined) return flavorCache[key]
+
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${speciesId}`)
+    if (!res.ok) throw new Error('species failed')
+    const data = await res.json()
+    const entries = data.flavor_text_entries || []
+    const text = cleanFlavorText(
+      pickFlavorText(entries, 'zh-hant') ||
+        pickFlavorText(entries, 'zh-hans') ||
+        pickFlavorText(entries, 'en'),
+    )
+    flavorCache[key] = text
+    return text
+  } catch {
+    flavorCache[key] = ''
+    return ''
+  }
+}
+
 async function loadTypes() {
   const res = await fetch('https://pokeapi.co/api/v2/type?limit=30')
   if (!res.ok) throw new Error('types failed')
@@ -199,11 +235,13 @@ async function fetchPokemon(nameOrId, { mystery = false } = {}) {
     const data = await res.json()
     const speciesId = pokemonIdFromUrl(data.species.url)
     const zhName = getZhName(speciesId, displayName(data.name))
+    const flavor = await getFlavorText(speciesId)
 
     pokemon.value = {
       id: data.id,
       name: zhName,
       apiName: data.name,
+      flavor,
       image:
         data.sprites.other?.['official-artwork']?.front_default ||
         data.sprites.front_default,
@@ -687,16 +725,6 @@ onMounted(async () => {
 
           <article class="deck-page pokemon">
             <h2 class="poke-name">{{ pokemon.name }}</h2>
-            <div class="types">
-              <span
-                v-for="type in pokemon.types"
-                :key="type.name"
-                class="type-badge"
-                :style="{ backgroundColor: type.color }"
-              >
-                {{ type.name }}
-              </span>
-            </div>
             <div class="silhouette-wrap">
               <button
                 class="swipe-arrow is-muted"
@@ -742,6 +770,7 @@ onMounted(async () => {
                 </svg>
               </button>
             </div>
+            <p v-if="pokemon.flavor" class="flavor-box">{{ pokemon.flavor }}</p>
             <div class="stats-layout">
               <ul class="stats">
                 <li v-for="stat in pokemon.stats" :key="stat.key" class="stat-row">
@@ -752,7 +781,19 @@ onMounted(async () => {
                   <span class="stat-value">{{ stat.value }}</span>
                 </li>
               </ul>
-              <RadarChart :stats="pokemon.stats" />
+              <div class="radar-side">
+                <div class="types">
+                  <span
+                    v-for="type in pokemon.types"
+                    :key="type.name"
+                    class="type-badge"
+                    :style="{ backgroundColor: type.color }"
+                  >
+                    {{ type.name }}
+                  </span>
+                </div>
+                <RadarChart :stats="pokemon.stats" />
+              </div>
             </div>
           </article>
         </div>
