@@ -306,7 +306,10 @@ body {
 }
 
 .mystery-page {
-  padding-top: 12px;
+  min-height: 520px;
+  padding-top: 28px;
+  padding-bottom: 24px;
+  justify-content: flex-start;
 }
 
 .deck-dots {
@@ -725,6 +728,11 @@ body {
 
   .mystery-title {
     min-height: 78px;
+  }
+
+  .mystery-page {
+    min-height: 460px;
+    padding-top: 20px;
   }
 
   .mystery-marks {

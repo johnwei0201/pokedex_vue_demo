@@ -84,6 +84,8 @@ const mysteryIndex = ref(-1)
 const dexHistory = []
 const dexIndex = ref(-1)
 
+const isMystery = computed(() => !!(pokemon.value && pageIndex.value === 0))
+
 const isEnglishFlavor = computed(() => {
   const text = pokemon.value?.flavor || ''
   return /[A-Za-z]/.test(text) && !/[\u4e00-\u9fff]/.test(text)
@@ -703,7 +705,7 @@ onMounted(async () => {
             </h2>
             <div class="silhouette-wrap">
               <button
-                class="swipe-arrow"
+                class="swipe-arrow is-muted"
                 type="button"
                 aria-label="上一題"
                 @pointerdown.stop
@@ -742,7 +744,7 @@ onMounted(async () => {
                 />
               </button>
               <button
-                class="swipe-arrow"
+                class="swipe-arrow is-muted"
                 type="button"
                 aria-label="下一題"
                 @pointerdown.stop
