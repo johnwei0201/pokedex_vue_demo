@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import RadarChart from './components/RadarChart.vue'
+import ZH_NAMES from './data/zh-names.json'
 
 const STAT_LABELS = {
   hp: '體力',
@@ -54,9 +55,7 @@ const TYPE_LABELS = {
 }
 
 const HIDDEN_TYPES = new Set(['stellar', 'unknown', 'shadow'])
-const NAME_CACHE_KEY = 'pokedex-zh-names-v2'
 const typePokemonCache = {}
-const zhNameCache = loadNameCache()
 
 const types = ref([])
 const selectedType = ref('')
@@ -109,18 +108,6 @@ const typeChips = computed(() => {
   return chips
 })
 
-function loadNameCache() {
-  try {
-    return JSON.parse(sessionStorage.getItem(NAME_CACHE_KEY) || '{}')
-  } catch {
-    return {}
-  }
-}
-
-function saveNameCache() {
-  sessionStorage.setItem(NAME_CACHE_KEY, JSON.stringify(zhNameCache))
-}
-
 function capitalize(name) {
   return name.charAt(0).toUpperCase() + name.slice(1)
 }
@@ -138,33 +125,8 @@ function pokemonIdFromUrl(url) {
   return Number(parts[parts.length - 1])
 }
 
-async function getZhName(id, fallback) {
-  const key = String(id)
-  if (zhNameCache[key]) return zhNameCache[key]
-
-  try {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`)
-    if (!res.ok) throw new Error('species failed')
-    const data = await res.json()
-    const zh =
-      data.names.find((item) => item.language.name === 'zh-hant') ||
-      data.names.find((item) => item.language.name === 'zh-hans')
-    const name = zh?.name
-    if (!name) return fallback
-    zhNameCache[key] = name
-    return name
-  } catch {
-    return fallback
-  }
-}
-
-async function mapInChunks(items, size, mapper) {
-  const result = []
-  for (let i = 0; i < items.length; i += size) {
-    const chunk = items.slice(i, i + size)
-    result.push(...(await Promise.all(chunk.map(mapper))))
-  }
-  return result
+function getZhName(id, fallback) {
+  return ZH_NAMES[id] || ZH_NAMES[String(id)] || fallback
 }
 
 async function loadTypes() {
@@ -204,12 +166,11 @@ async function loadPokemonByType(typeName) {
       .filter((item) => item.id < 10000 && !seen.has(item.name) && seen.add(item.name))
       .sort((a, b) => a.id - b.id)
 
-    const list = await mapInChunks(rawList, 12, async (item) => ({
+    const list = rawList.map((item) => ({
       ...item,
-      label: await getZhName(item.id, displayName(item.name)),
+      label: getZhName(item.id, displayName(item.name)),
     }))
 
-    saveNameCache()
     typePokemonCache[typeName] = list
     pokemonOptions.value = list
   } catch {
@@ -235,8 +196,7 @@ async function fetchPokemon(nameOrId, { mystery = false } = {}) {
 
     const data = await res.json()
     const speciesId = pokemonIdFromUrl(data.species.url)
-    const zhName = await getZhName(speciesId, displayName(data.name))
-    saveNameCache()
+    const zhName = getZhName(speciesId, displayName(data.name))
 
     pokemon.value = {
       id: data.id,
@@ -490,11 +450,13 @@ async function onQuickPick(name) {
 
 onMounted(async () => {
   try {
-    await loadTypes()
     selectedType.value = 'electric'
-    await loadPokemonByType('electric')
     selectedName.value = 'pikachu'
-    await fetchPokemon('pikachu', { mystery: true })
+    await Promise.all([
+      loadTypes(),
+      loadPokemonByType('electric'),
+      fetchPokemon('pikachu', { mystery: true }),
+    ])
   } catch {
     error.value = '屬性列表載入失敗，請重新整理'
   }
