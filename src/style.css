@@ -132,7 +132,7 @@ body {
   height: 40px;
   padding: 0 22px 0 8px;
   border: 1px solid #e6e0d4;
-  border-radius: 999px;
+  border-radius: 8px;
   background-color: #fff;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238b8680' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -142,6 +142,12 @@ body {
   outline: none;
   appearance: none;
   cursor: pointer;
+  text-align: center;
+  text-align-last: center;
+}
+
+.search-select option {
+  text-align: center;
 }
 
 .search-select:focus {
@@ -204,12 +210,13 @@ body {
   flex-shrink: 0;
   height: 40px;
   padding: 0 10px;
-  border-radius: 999px;
+  border-radius: 8px;
   background: #3f7a4a;
   color: #fff;
   font-weight: 600;
   font-size: 14px;
   white-space: nowrap;
+  text-align: center;
 }
 
 .search-btn:hover {
