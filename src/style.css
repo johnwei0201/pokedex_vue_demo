@@ -375,6 +375,11 @@ body {
   color: #d5d1c9;
 }
 
+.swipe-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .silhouette-board {
   position: relative;
   flex: 0 0 auto;

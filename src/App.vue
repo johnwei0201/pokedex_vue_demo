@@ -72,7 +72,12 @@ const typeHintOpen = ref(false)
 let swipeStartX = null
 let skipSilhouetteUntil = 0
 let skipHistoryPush = false
+let skipDexHistoryPush = false
 const mysteryHistory = []
+const dexHistory = []
+const dexIndex = ref(-1)
+
+const canGoDexPrev = computed(() => dexIndex.value > 0)
 
 const isMystery = computed(() => !!(pokemon.value && pageIndex.value === 0))
 
@@ -266,6 +271,7 @@ async function fetchPokemon(nameOrId, { mystery = false } = {}) {
     error.value = '找不到這隻寶可夢，請再選一次'
   } finally {
     loading.value = false
+    if (!mystery) rememberDexPokemon()
   }
 }
 
@@ -328,6 +334,56 @@ async function onRandomAnswer() {
   await pickMysteryFromCurrentType(false)
 }
 
+function rememberDexPokemon() {
+  if (skipDexHistoryPush) {
+    skipDexHistoryPush = false
+    return
+  }
+
+  const name = pokemon.value?.apiName
+  if (!name) return
+
+  const entry = {
+    name,
+    type: selectedType.value || pokemon.value.typeKeys?.[0] || '',
+  }
+  const current = dexHistory[dexIndex.value]
+  if (current?.name === entry.name) return
+
+  if (dexIndex.value >= 0 && dexIndex.value < dexHistory.length - 1) {
+    dexHistory.splice(dexIndex.value + 1)
+  }
+
+  dexHistory.push(entry)
+  if (dexHistory.length > 40) dexHistory.shift()
+  dexIndex.value = dexHistory.length - 1
+}
+
+async function showDexEntry(entry) {
+  skipDexHistoryPush = true
+  selectedType.value = entry.type
+  selectedName.value = entry.name
+  await loadPokemonByType(entry.type)
+  await fetchPokemon(entry.name, { mystery: false })
+}
+
+async function onDexNext() {
+  if (dexIndex.value < dexHistory.length - 1) {
+    dexIndex.value += 1
+    await showDexEntry(dexHistory[dexIndex.value])
+    return
+  }
+
+  await onRandomAnswer()
+}
+
+async function onDexPrev() {
+  if (dexIndex.value <= 0) return
+
+  dexIndex.value -= 1
+  await showDexEntry(dexHistory[dexIndex.value])
+}
+
 function mysteryArt(id, fallback) {
   return id ? `/pokemon/${id}.png` : fallback
 }
@@ -341,13 +397,14 @@ function onMysteryArtError(event) {
 
 function goToPage(index) {
   pageIndex.value = index === 1 ? 1 : 0
+  if (pageIndex.value === 1) rememberDexPokemon()
 }
 
 function onSwipeLeft() {
   if (loading.value || listLoading.value) return
   skipSilhouetteUntil = Date.now() + 700
   if (pageIndex.value === 1) {
-    onRandomAnswer()
+    onDexNext()
     return
   }
   onRandom()
@@ -358,7 +415,7 @@ async function onSwipeRight() {
   skipSilhouetteUntil = Date.now() + 700
 
   if (pageIndex.value === 1) {
-    onRandomAnswer()
+    onDexPrev()
     return
   }
 
@@ -640,7 +697,8 @@ onMounted(async () => {
               <button
                 class="swipe-arrow is-muted"
                 type="button"
-                aria-label="下一隻"
+                aria-label="上一隻"
+                :disabled="!canGoDexPrev"
                 @pointerdown.stop
                 @click.stop="onSwipeRight"
               >
@@ -668,7 +726,7 @@ onMounted(async () => {
               </ul>
               <RadarChart :stats="pokemon.stats" />
             </div>
-            <p class="reveal-hint">點左右看下一隻</p>
+            <p class="reveal-hint">點左看下一隻，點右看上一隻</p>
           </article>
         </div>
 
