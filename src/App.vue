@@ -70,6 +70,9 @@ const pageIndex = ref(0)
 const typeHintOpen = ref(false)
 
 let swipeStartX = null
+let skipSilhouetteUntil = 0
+let skipHistoryPush = false
+const mysteryHistory = []
 
 const isMystery = computed(() => !!(pokemon.value && pageIndex.value === 0))
 
@@ -281,6 +284,15 @@ function onNameChange() {
 }
 
 async function pickMysteryFromCurrentType() {
+  if (!skipHistoryPush && pokemon.value?.apiName) {
+    mysteryHistory.push({
+      name: pokemon.value.apiName,
+      type: selectedType.value,
+    })
+    if (mysteryHistory.length > 40) mysteryHistory.shift()
+  }
+  skipHistoryPush = false
+
   const list = pokemonOptions.value
   if (!list.length) {
     error.value = '這個屬性目前沒有可隨機的角色'
@@ -321,6 +333,35 @@ function goToPage(index) {
   pageIndex.value = index === 1 ? 1 : 0
 }
 
+function onSwipeLeft() {
+  if (loading.value || listLoading.value) return
+  skipSilhouetteUntil = Date.now() + 700
+  onRandom()
+}
+
+async function onSwipeRight() {
+  if (loading.value || listLoading.value) return
+  skipSilhouetteUntil = Date.now() + 700
+
+  if (pageIndex.value === 1) {
+    pageIndex.value = 0
+    return
+  }
+
+  const prev = mysteryHistory.pop()
+  if (!prev) {
+    onRandom()
+    return
+  }
+
+  skipHistoryPush = true
+  selectedType.value = prev.type
+  typeHintOpen.value = true
+  selectedName.value = prev.name
+  await loadPokemonByType(prev.type)
+  await fetchPokemon(prev.name, { mystery: true })
+}
+
 function onPointerDown(event) {
   swipeStartX = event.clientX
 }
@@ -332,15 +373,24 @@ function onPointerUp(event) {
   if (loading.value || listLoading.value) return
 
   if (delta < -40) {
-    if (pageIndex.value === 0) {
-      pageIndex.value = 1
-    } else {
-      onRandom()
-    }
+    onSwipeLeft()
     return
   }
 
-  if (delta > 40) pageIndex.value = 0
+  if (delta > 40) {
+    onSwipeRight()
+    return
+  }
+
+  if (pageIndex.value === 0 && event.target.closest?.('.silhouette-board')) {
+    goToPage(1)
+  }
+}
+
+function onSilhouetteClick(event) {
+  event.preventDefault()
+  if (Date.now() < skipSilhouetteUntil) return
+  goToPage(1)
 }
 
 async function onQuickPick(name) {
@@ -473,28 +523,66 @@ onMounted(async () => {
               <span class="mystery-marks">????</span>
               <span class="mystery-who">我是誰</span>
             </h2>
-            <button
-              class="silhouette-board"
-              type="button"
-              aria-label="查看圖鑑"
-              @click="goToPage(1)"
-            >
-              <img
-                class="silhouette-frame"
-                src="/pokemon/mystery-frame.png"
-                alt=""
-                draggable="false"
-              />
-              <img
-                v-if="pokemon.image"
-                class="poke-img is-silhouette"
-                :src="mysteryArt(pokemon.id, pokemon.image)"
-                alt="寶可夢剪影"
-                draggable="false"
-                @error="onMysteryArtError"
-              />
-            </button>
-            <p class="reveal-hint">往左滑，查看圖鑑</p>
+            <div class="silhouette-wrap">
+              <button
+                class="swipe-arrow"
+                type="button"
+                aria-label="下一題"
+                @pointerdown.stop
+                @click.stop="onSwipeLeft"
+              >
+                <svg viewBox="0 0 24 48" aria-hidden="true">
+                  <path
+                    d="M16 6L6 24l10 18"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                class="silhouette-board"
+                type="button"
+                aria-label="查看圖鑑"
+                @click="onSilhouetteClick"
+              >
+                <img
+                  class="silhouette-frame"
+                  src="/pokemon/mystery-frame.png"
+                  alt=""
+                  draggable="false"
+                />
+                <img
+                  v-if="pokemon.image"
+                  class="poke-img is-silhouette"
+                  :src="mysteryArt(pokemon.id, pokemon.image)"
+                  alt="寶可夢剪影"
+                  draggable="false"
+                  @error="onMysteryArtError"
+                />
+              </button>
+              <button
+                class="swipe-arrow"
+                type="button"
+                aria-label="上一題"
+                @pointerdown.stop
+                @click.stop="onSwipeRight"
+              >
+                <svg viewBox="0 0 24 48" aria-hidden="true">
+                  <path
+                    d="M8 6l10 18L8 42"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+            <p class="reveal-hint">點黑影看答案，往左滑出下一題</p>
           </article>
 
           <article class="deck-page pokemon">
@@ -509,13 +597,51 @@ onMounted(async () => {
                 {{ type.name }}
               </span>
             </div>
-            <img
-              v-if="pokemon.image"
-              class="poke-img"
-              :src="pokemon.image"
-              :alt="pokemon.name"
-              draggable="false"
-            />
+            <div class="silhouette-wrap">
+              <button
+                class="swipe-arrow is-muted"
+                type="button"
+                aria-label="下一題"
+                @pointerdown.stop
+                @click.stop="onSwipeLeft"
+              >
+                <svg viewBox="0 0 24 48" aria-hidden="true">
+                  <path
+                    d="M16 6L6 24l10 18"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <img
+                v-if="pokemon.image"
+                class="poke-img"
+                :src="pokemon.image"
+                :alt="pokemon.name"
+                draggable="false"
+              />
+              <button
+                class="swipe-arrow is-muted"
+                type="button"
+                aria-label="返回剪影"
+                @pointerdown.stop
+                @click.stop="onSwipeRight"
+              >
+                <svg viewBox="0 0 24 48" aria-hidden="true">
+                  <path
+                    d="M8 6l10 18L8 42"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
             <div class="stats-layout">
               <ul class="stats">
                 <li v-for="stat in pokemon.stats" :key="stat.key" class="stat-row">
