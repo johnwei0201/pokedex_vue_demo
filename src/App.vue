@@ -592,7 +592,9 @@ function onSilhouetteClick(event) {
 
 function openMysteryFromDex() {
   if (Date.now() < skipSilhouetteUntil) return
-  typeHintOpen.value = false
+  const typeName = pokemon.value?.typeKeys?.[0]
+  if (typeName) selectedType.value = typeName
+  typeHintOpen.value = true
   goToPage(0)
 }
 
