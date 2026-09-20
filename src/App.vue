@@ -91,6 +91,8 @@ const isEnglishFlavor = computed(() => {
   return /[A-Za-z]/.test(text) && !/[\u4e00-\u9fff]/.test(text)
 })
 
+const flavorParts = computed(() => splitFlavorNumbers(pokemon.value?.flavor || ''))
+
 const typeSelectValue = computed({
   get() {
     if (isMystery.value && !typeHintOpen.value) return ''
@@ -148,9 +150,31 @@ function getZhName(id, fallback) {
 function cleanFlavorText(text) {
   return String(text || '')
     .replace(/\f/g, ' ')
+    .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
     .replace(/\s+/g, ' ')
     .replace(/([\u4e00-\u9fff，。！？、：；])\s+(?=[\u4e00-\u9fff])/g, '$1')
+    .replace(/\s+(?=\d)/g, '\u2006')
+    .replace(/(?<=\d)\s+/g, '\u2006')
     .trim()
+}
+
+function splitFlavorNumbers(text) {
+  const parts = []
+  const re = /\d+(?:\.\d+)?/g
+  let last = 0
+  let i = 0
+  let match
+  while ((match = re.exec(text))) {
+    if (match.index > last) {
+      parts.push({ key: i++, text: text.slice(last, match.index), num: false })
+    }
+    parts.push({ key: i++, text: match[0], num: true })
+    last = match.index + match[0].length
+  }
+  if (last < text.length) {
+    parts.push({ key: i++, text: text.slice(last), num: false })
+  }
+  return parts
 }
 
 function pickFlavorText(entries, lang) {
@@ -820,7 +844,12 @@ onMounted(async () => {
               v-if="pokemon.flavor"
               class="flavor-box"
               :class="{ 'is-en': isEnglishFlavor }"
-            >{{ pokemon.flavor }}</p>
+            >
+              <template v-for="part in flavorParts" :key="part.key">
+                <span v-if="part.num" class="flavor-num">{{ part.text }}</span>
+                <template v-else>{{ part.text }}</template>
+              </template>
+            </p>
             <div class="stats-layout">
               <ul class="stats">
                 <li v-for="stat in pokemon.stats" :key="stat.key" class="stat-row">

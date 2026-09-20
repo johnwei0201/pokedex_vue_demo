@@ -547,6 +547,10 @@ body {
   line-height: 1.25;
 }
 
+.flavor-num {
+  letter-spacing: -0.08em;
+}
+
 .types {
   display: flex;
   flex-wrap: nowrap;
