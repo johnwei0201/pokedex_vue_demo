@@ -73,11 +73,10 @@ let swipeStartX = null
 let skipSilhouetteUntil = 0
 let skipHistoryPush = false
 let skipDexHistoryPush = false
+let dexInsertFront = false
 const mysteryHistory = []
 const dexHistory = []
 const dexIndex = ref(-1)
-
-const canGoDexPrev = computed(() => dexIndex.value > 0)
 
 const isMystery = computed(() => !!(pokemon.value && pageIndex.value === 0))
 
@@ -341,14 +340,28 @@ function rememberDexPokemon() {
   }
 
   const name = pokemon.value?.apiName
-  if (!name) return
+  if (!name) {
+    dexInsertFront = false
+    return
+  }
 
   const entry = {
     name,
     type: selectedType.value || pokemon.value.typeKeys?.[0] || '',
   }
   const current = dexHistory[dexIndex.value]
-  if (current?.name === entry.name) return
+  if (current?.name === entry.name) {
+    dexInsertFront = false
+    return
+  }
+
+  if (dexInsertFront) {
+    dexInsertFront = false
+    dexHistory.unshift(entry)
+    if (dexHistory.length > 40) dexHistory.pop()
+    dexIndex.value = 0
+    return
+  }
 
   if (dexIndex.value >= 0 && dexIndex.value < dexHistory.length - 1) {
     dexHistory.splice(dexIndex.value + 1)
@@ -368,6 +381,7 @@ async function showDexEntry(entry) {
 }
 
 async function onDexNext() {
+  rememberDexPokemon()
   if (dexIndex.value < dexHistory.length - 1) {
     dexIndex.value += 1
     await showDexEntry(dexHistory[dexIndex.value])
@@ -378,10 +392,15 @@ async function onDexNext() {
 }
 
 async function onDexPrev() {
-  if (dexIndex.value <= 0) return
+  rememberDexPokemon()
+  if (dexIndex.value > 0) {
+    dexIndex.value -= 1
+    await showDexEntry(dexHistory[dexIndex.value])
+    return
+  }
 
-  dexIndex.value -= 1
-  await showDexEntry(dexHistory[dexIndex.value])
+  dexInsertFront = true
+  await onRandomAnswer()
 }
 
 function mysteryArt(id, fallback) {
@@ -698,7 +717,6 @@ onMounted(async () => {
                 class="swipe-arrow is-muted"
                 type="button"
                 aria-label="上一隻"
-                :disabled="!canGoDexPrev"
                 @pointerdown.stop
                 @click.stop="onSwipeRight"
               >
