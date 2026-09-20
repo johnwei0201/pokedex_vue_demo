@@ -216,7 +216,7 @@ body {
 }
 
 .chip.is-active {
-  border-color: #3f7a4a;
+  border-color: transparent;
   color: #3f7a4a;
   background: #f3f8f3;
 }

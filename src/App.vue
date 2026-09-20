@@ -741,7 +741,6 @@ onMounted(async () => {
               </ul>
               <RadarChart :stats="pokemon.stats" />
             </div>
-            <p class="reveal-hint">點左看下一隻，點右看上一隻</p>
           </article>
         </div>
 
