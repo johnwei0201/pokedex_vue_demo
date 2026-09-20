@@ -84,7 +84,10 @@ const mysteryIndex = ref(-1)
 const dexHistory = []
 const dexIndex = ref(-1)
 
-const isMystery = computed(() => !!(pokemon.value && pageIndex.value === 0))
+const isEnglishFlavor = computed(() => {
+  const text = pokemon.value?.flavor || ''
+  return /[A-Za-z]/.test(text) && !/[\u4e00-\u9fff]/.test(text)
+})
 
 const typeSelectValue = computed({
   get() {
@@ -811,7 +814,11 @@ onMounted(async () => {
                 </svg>
               </button>
             </div>
-            <p v-if="pokemon.flavor" class="flavor-box">{{ pokemon.flavor }}</p>
+            <p
+              v-if="pokemon.flavor"
+              class="flavor-box"
+              :class="{ 'is-en': isEnglishFlavor }"
+            >{{ pokemon.flavor }}</p>
             <div class="stats-layout">
               <ul class="stats">
                 <li v-for="stat in pokemon.stats" :key="stat.key" class="stat-row">
