@@ -110,6 +110,10 @@ body {
   padding: 12px 14px 10px;
 }
 
+.search-panel.is-dex {
+  min-height: 96px;
+}
+
 .search-row {
   display: flex;
   gap: 8px;
@@ -191,19 +195,24 @@ body {
 
 .chips {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
   gap: 6px;
   margin-top: 8px;
+  height: 26px;
+  overflow: hidden;
 }
 
 .chip {
+  flex: 0 0 auto;
   padding: 4px 10px;
   border: 1px solid #ece7dc;
   border-radius: 999px;
   background: #fff;
   color: #6b645a;
   font-size: 12px;
+  white-space: nowrap;
 }
 
 .chip.is-active {

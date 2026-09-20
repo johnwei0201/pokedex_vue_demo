@@ -519,7 +519,7 @@ onMounted(async () => {
       </svg>
       寶可夢圖鑑
     </h1>
-    <section class="panel search-panel">
+    <section class="panel search-panel" :class="{ 'is-dex': pageIndex === 1 }">
       <form class="search-row" :class="{ 'is-mystery': isMystery }" @submit.prevent="onRandom">
         <template v-if="isMystery">
           <span class="hint-label">提示</span>
@@ -573,10 +573,7 @@ onMounted(async () => {
         </button>
       </form>
 
-      <div
-        v-if="typeChips.length && pageIndex === 1"
-        class="chips"
-      >
+      <div v-if="pageIndex === 1" class="chips">
         <button
           v-for="item in typeChips"
           :key="item.name"
